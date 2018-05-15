@@ -1,16 +1,37 @@
 package com.example.trcanje.tracks;
 
 import android.location.Location;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Track {
+public class Track implements Parcelable {
 
     private final int id;
     private final List<Location> points;
     public long startTime;
     public long endTime;
+
+    protected Track(Parcel in) {
+        id = in.readInt();
+        points = in.createTypedArrayList(Location.CREATOR);
+        startTime = in.readLong();
+        endTime = in.readLong();
+    }
+
+    public static final Creator<Track> CREATOR = new Creator<Track>() {
+        @Override
+        public Track createFromParcel(Parcel in) {
+            return new Track(in);
+        }
+
+        @Override
+        public Track[] newArray(int size) {
+            return new Track[size];
+        }
+    };
 
     public void setEndtime(long endtime) {
         this.endTime = endtime;
@@ -36,6 +57,9 @@ public class Track {
         return points;
     }
 
+    public void addLocations(List<Location> locations){
+        getPoints().addAll(locations);
+    }
     public float trackDistance(){
         float distance = 0;
         if(points.size() > 1) {
@@ -93,5 +117,18 @@ public class Track {
         float speed = currentSpeed(currentTime);
         String speedstring = String.valueOf((int)speed);
         return speedstring + " m/s";
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(id);
+        parcel.writeTypedList(points);
+        parcel.writeLong(startTime);
+        parcel.writeLong(endTime);
     }
 }

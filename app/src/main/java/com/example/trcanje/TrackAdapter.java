@@ -51,10 +51,11 @@ public class TrackAdapter extends BaseAdapter {
         TextView distance_view = (TextView) view.findViewById(R.id.TextView_distance1);
         TextView speed_view = (TextView) view.findViewById(R.id.TextView_speed1);
 
-        id_view.setText(tracksById.get(i).getId());
+        id_view.setText(String.valueOf(tracksById.get(i).getId()));
         time_view.setText(tracksById.get(i).timePassed(tracksById.get(i).endTime));
         distance_view.setText(tracksById.get(i).distance(tracksById.get(i).endTime));
         speed_view.setText(tracksById.get(i).speed(tracksById.get(i).endTime));
+
         return view;
     }
 }

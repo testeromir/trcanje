@@ -2,6 +2,7 @@ package com.example.trcanje;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -39,18 +40,20 @@ public class MainActivity extends AppCompatActivity {
     private boolean mRequestingLocationUpdates;
     private LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
-    static public TrackManager trackManager = new TrackManager();
     Timer timer;
     private TextView timeTextView;
     private TextView distanceTextView;
     private TextView speedTextView;
     private Button  buttonStart;
     private Button buttonStop;
-
+    int id;
+    private Track track;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Intent intent = getIntent();
+        intent.getIntExtra(getString(R.string.track_id),id);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -78,12 +81,11 @@ public class MainActivity extends AppCompatActivity {
                 buttonStart.setEnabled(false);
                 buttonStop.setEnabled(true);
                 mRequestingLocationUpdates = true;
-                trackManager.createNewTrack();
+               track = new Track(id);
                 timer = new Timer();
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        Track track = trackManager.getLastTrack();
                         timeTextView.setText(track.timePassed(System.currentTimeMillis()));
                         distanceTextView.setText(track.distance(System.currentTimeMillis()));
                         speedTextView.setText(track.speed(System.currentTimeMillis()));
@@ -101,9 +103,12 @@ public class MainActivity extends AppCompatActivity {
               //  buttonStart.setEnabled(true);
                 buttonStop.setEnabled(false);
                 timer.cancel();
-                trackManager.getLastTrack().endTime = System.currentTimeMillis();
+                track.endTime = System.currentTimeMillis();
                 stopLocationUpdates();
-//                finishActivity();
+                Intent intent = new Intent();
+                intent.putExtra(getString(R.string.track),track);
+                setResult(RESULT_OK,intent);
+                finish();
             }
         });
 
@@ -193,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
                     double altitude = location.getAltitude();
                     Log.i("INFO","Promena lokacije: " + latitude + " , " + longitude + " , "+ altitude);
                 }
-                trackManager.addLocations(trackManager.getLastTrack().getId(),locations);
+                track.addLocations(locations);
             };
         };
 
@@ -215,10 +220,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void stopLocationUpdates() {
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-        Track lastTrack = trackManager.getLastTrack();
-        if (lastTrack != null) {
-            List<Location> points = lastTrack.getPoints();
-            Log.i("INFO", "Track id: " + lastTrack.getId() + " Locations: " + points.size());
+        if (track != null) {
+            List<Location> points = track.getPoints();
+            Log.i("INFO", "Track id: " + track.getId() + " Locations: " + points.size());
             for (Location location : points) {
                 location.getTime();
                 double latitude = location.getLatitude();

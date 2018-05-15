@@ -20,15 +20,24 @@ public class TrackManager {
 
     public Track createNewTrack() {
 
-        counter++;
+
 
         Track track = new Track(counter);
 
         tracksById.put(counter, track);
 
+        counter++;
+
         return track;
     }
 
+    public static int getCounter() {
+        return counter;
+    }
+
+    public void setTrack(int id, Track track){
+            tracksById.put(id,track);
+    }
     public Track createNewTrack(List<Location> points, long starttime) {
         counter++;
 
