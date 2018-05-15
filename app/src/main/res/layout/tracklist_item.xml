@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:orientation="horizontal"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/TextView_id"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:text="@string/zero"/>
+
+    <TextView
+        android:id="@+id/TextView_time1"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:text="@string/zero_time"/>
+
+    <TextView
+        android:id="@+id/TextView_distance1"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:text="@string/zero_distance"/>
+
+    <TextView
+        android:id="@+id/TextView_speed1"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:text="@string/zero_speed"/>
+
+</LinearLayout>

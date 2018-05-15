@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.trcanje.MainActivity">
+<Button
+    android:id="@+id/button_start_update"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/start_track"
+    />
+<Button
+    android:id="@+id/button_stop_update"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/stop_track"/>
+
+    <TextView
+        android:id="@+id/TextView_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/zero_time"/>
+
+    <TextView
+        android:id="@+id/TextView_distance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/zero_distance"/>
+
+    <TextView
+        android:id="@+id/TextView_speed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/zero_speed"/>
+
+
+
+
+
+</LinearLayout>

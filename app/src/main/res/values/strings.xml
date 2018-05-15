@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Trcanje</string>
+    <string name="start_track">Start track</string>
+    <string name="stop_track">Stop track</string>
+    <string name="zero_time">00:00:00</string>
+    <string name="zero_distance">0 m</string>
+    <string name="zero_speed">0 m/s</string>
+    <string name="list_of_tracks">List of tracks</string>
+    <string name="new_track">New track</string>
+    <string name="zero">0</string>
+</resources>
