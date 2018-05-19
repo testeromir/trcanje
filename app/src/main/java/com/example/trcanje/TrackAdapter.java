@@ -11,15 +11,19 @@ import com.example.trcanje.tracks.Track;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 public class TrackAdapter extends BaseAdapter {
 
-    private  Map<Integer, Track> tracksById;
+    private ArrayList<Track> tracksById;
     Context context;
 
     public TrackAdapter(Map<Integer, Track> tracksById, Context context) {
-        this.tracksById = tracksById;
+        this.tracksById = new ArrayList<Track>();
+        for(Track t : tracksById.values()) {
+            this.tracksById.add(t);
+        }
         this.context = context;
     }
 
@@ -47,14 +51,16 @@ public class TrackAdapter extends BaseAdapter {
         }
 
         TextView id_view = (TextView) view.findViewById(R.id.TextView_id);
+        TextView name_view = (TextView) view.findViewById(R.id.TextView_name);
         TextView time_view = (TextView) view.findViewById(R.id.TextView_time1);
         TextView distance_view = (TextView) view.findViewById(R.id.TextView_distance1);
         TextView speed_view = (TextView) view.findViewById(R.id.TextView_speed1);
 
         id_view.setText(String.valueOf(tracksById.get(i).getId()));
-        time_view.setText(tracksById.get(i).timePassed(tracksById.get(i).endTime));
-        distance_view.setText(tracksById.get(i).distance(tracksById.get(i).endTime));
-        speed_view.setText(tracksById.get(i).speed(tracksById.get(i).endTime));
+        name_view.setText(String.valueOf(tracksById.get(i).getName()));
+        time_view.setText(tracksById.get(i).timePassed(tracksById.get(i).getEndTime()));
+        distance_view.setText(tracksById.get(i).distance(tracksById.get(i).getEndTime()));
+        speed_view.setText(tracksById.get(i).speed(tracksById.get(i).getEndTime()));
 
         return view;
     }

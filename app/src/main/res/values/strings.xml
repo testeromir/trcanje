@@ -10,4 +10,6 @@
     <string name="zero">0</string>
     <string name="track_id">TRACK_ID</string>
     <string name="track">TRACK</string>
+    <string name="enter_track_name">Enter track name:</string>
+    <string name="nothing" />
 </resources>

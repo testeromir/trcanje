@@ -6,25 +6,31 @@
 
     <TextView
         android:id="@+id/TextView_id"
-        android:layout_width="100dp"
+        android:layout_width="80dp"
         android:layout_height="match_parent"
         android:text="@string/zero"/>
 
     <TextView
+        android:id="@+id/TextView_name"
+        android:layout_width="80dp"
+        android:layout_height="match_parent"
+        android:text="@string/nothing"/>
+
+    <TextView
         android:id="@+id/TextView_time1"
-        android:layout_width="100dp"
+        android:layout_width="80dp"
         android:layout_height="match_parent"
         android:text="@string/zero_time"/>
 
     <TextView
         android:id="@+id/TextView_distance1"
-        android:layout_width="100dp"
+        android:layout_width="80dp"
         android:layout_height="match_parent"
         android:text="@string/zero_distance"/>
 
     <TextView
         android:id="@+id/TextView_speed1"
-        android:layout_width="100dp"
+        android:layout_width="80dp"
         android:layout_height="match_parent"
         android:text="@string/zero_speed"/>
 

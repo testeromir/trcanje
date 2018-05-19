@@ -1,43 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.trcanje.MainActivity">
-<Button
-    android:id="@+id/button_start_update"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="@string/start_track"
-    />
-<Button
-    android:id="@+id/button_stop_update"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="@string/stop_track"/>
-
-    <TextView
-        android:id="@+id/TextView_time"
+    tools:context=".MainActivity">
+    <Button
+        android:id="@+id/button_new_track"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/zero_time"/>
+        android:text="@string/new_track"/>
 
     <TextView
-        android:id="@+id/TextView_distance"
+        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/zero_distance"/>
+        android:text="@string/list_of_tracks"/>
 
-    <TextView
-        android:id="@+id/TextView_speed"
+    <ListView
+        android:id="@+id/list_view_tracks"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/zero_speed"/>
+        android:layout_height="wrap_content">
 
-
-
-
+    </ListView>
 
 </LinearLayout>

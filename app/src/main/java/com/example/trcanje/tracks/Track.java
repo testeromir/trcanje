@@ -10,12 +10,40 @@ import java.util.List;
 public class Track implements Parcelable {
 
     private final int id;
+    private String name;
     private final List<Location> points;
-    public long startTime;
-    public long endTime;
+    private long startTime;
+    private long endTime;
+
+    public String getName() {
+        return name;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    public long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
+    }
+
+    public void setName(String name) {
+
+        this.name = name;
+    }
 
     protected Track(Parcel in) {
+
         id = in.readInt();
+        name = in.readString();
         points = in.createTypedArrayList(Location.CREATOR);
         startTime = in.readLong();
         endTime = in.readLong();
@@ -127,6 +155,7 @@ public class Track implements Parcelable {
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeInt(id);
+        parcel.writeString(name);
         parcel.writeTypedList(points);
         parcel.writeLong(startTime);
         parcel.writeLong(endTime);
