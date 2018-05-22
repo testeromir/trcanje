@@ -41,82 +41,151 @@ public class TrackActivity extends AppCompatActivity {
     private boolean mRequestingLocationUpdates;
     private LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
-    Timer timer;
+    private Timer timer;
     private EditText nameEditText;
     private TextView timeTextView;
     private TextView distanceTextView;
     private TextView speedTextView;
-    private Button  buttonStart;
+    private Button buttonStart;
+    private Button buttonPauseResume;
     private Button buttonStop;
     int id;
     private Track track;
+    public int requestCode;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_track);
         Intent intent = getIntent();
-       id = intent.getIntExtra(getString(R.string.track_id),0);
+        requestCode = intent.getIntExtra(getString(R.string.request_code), 0);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            ActivityCompat.requestPermissions(this, new String[] {"android.permission.ACCESS_FINE_LOCATION"}, 1);
-
-            return;
-        }
-      //  trackManager = new TrackManager();
         nameEditText = findViewById(R.id.edit_text_track_name);
         timeTextView = findViewById(R.id.TextView_time);
         distanceTextView = findViewById(R.id.TextView_distance);
         speedTextView = findViewById(R.id.TextView_speed);
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        buttonStart = (Button) findViewById(R.id.button_start_update);
+        buttonPauseResume = (Button) findViewById(R.id.button_pause_resume_update);
+        buttonStop = (Button) findViewById(R.id.button_stop_update);
 
-         buttonStart = (Button) findViewById(R.id.button_start_update);
-        buttonStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                buttonStart.setEnabled(false);
-                buttonStop.setEnabled(true);
-                mRequestingLocationUpdates = true;
-               track = new Track(id);
-                timer = new Timer();
-                timer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        timeTextView.setText(track.timePassed(System.currentTimeMillis()));
-                        distanceTextView.setText(track.distance(System.currentTimeMillis()));
-                        speedTextView.setText(track.speed(System.currentTimeMillis()));
+        if(requestCode == MainActivity.REQUEST_NEW_CODE){
+            id = intent.getIntExtra(getString(R.string.track_id), 0);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                ActivityCompat.requestPermissions(this, new String[]{"android.permission.ACCESS_FINE_LOCATION"}, 1);
 
+                return;
+            }
+            //  trackManager = new TrackManager();
+
+
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+            nameEditText.setText(String.valueOf(id) + ". track");
+
+            buttonStart.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    buttonPauseResume.setEnabled(true);
+                    buttonStart.setEnabled(false);
+                    buttonStop.setEnabled(true);
+                    mRequestingLocationUpdates = true;
+                    track = new Track(id);
+                    timer = new Timer();
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            timeTextView.setText(track.timePassed(System.currentTimeMillis()));
+                            distanceTextView.setText(track.distance(System.currentTimeMillis()));
+                            speedTextView.setText(track.speed(System.currentTimeMillis()));
+
+                        }
+                    }, 1, 100);
+                    startLocationUpdates();
+                }
+            });
+
+
+            buttonPauseResume.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (buttonPauseResume.getText() == getString(R.string.pause_track)) {
+                        stopLocationUpdates();
+                        track.setTime(track.getTime() + System.currentTimeMillis() - track.getStartTime());
+                        timer.cancel();
+                        buttonPauseResume.setText(getString(R.string.resume_track));
+                    } else {
+                        if (mRequestingLocationUpdates) {
+                            startLocationUpdates();
+                        }
+                        track.setStartTime(System.currentTimeMillis());
+                        timer = new Timer();
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                timeTextView.setText(track.timePassed(System.currentTimeMillis()));
+                                distanceTextView.setText(track.distance(System.currentTimeMillis()));
+                                speedTextView.setText(track.speed(System.currentTimeMillis()));
+
+                            }
+                        }, 1, 100);
+                        buttonPauseResume.setText(getString(R.string.pause_track));
                     }
-                }, 1, 100);
-                startLocationUpdates();
-            }
-        });
+                }
+            });
 
-         buttonStop = (Button) findViewById(R.id.button_stop_update);
-        buttonStop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-              //  buttonStart.setEnabled(true);
-                buttonStop.setEnabled(false);
-                timer.cancel();
-                track.setName(nameEditText.getText().toString());
-                track.setEndTime(System.currentTimeMillis());
-                stopLocationUpdates();
-                Intent intent = new Intent();
-                intent.putExtra(getString(R.string.track),track);
-                setResult(RESULT_OK,intent);
-                finish();
-            }
-        });
-        buttonStop.setEnabled(false);
-        initiLocation();
+            buttonPauseResume.setEnabled(false);
+
+
+            buttonStop.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    //  buttonStart.setEnabled(true);
+                    buttonPauseResume.setEnabled(false);
+                    buttonStop.setEnabled(false);
+                    timer.cancel();
+                    track.setName(nameEditText.getText().toString());
+                    track.setEndTime(System.currentTimeMillis());
+                  //  track.setTime(track.getTime() + track.getEndTime() - track.getStartTime());
+                    stopLocationUpdates();
+                    Intent intent = new Intent();
+                    intent.putExtra(getString(R.string.track), track);
+                    setResult(RESULT_OK, intent);
+                    finish();
+                }
+            });
+            buttonStop.setEnabled(false);
+            initiLocation();
+        } else {if(requestCode == MainActivity.REQUEST_VIEW_CODE){
+            buttonStart.setVisibility(View.GONE);
+            buttonPauseResume.setVisibility(View.GONE);
+            buttonStop.setText(R.string.back);
+            Track track = intent.getParcelableExtra(getString(R.string.track));
+            nameEditText.setText(track.getName());
+          //  distanceTextView.setText(String.valueOf(track.getDistance()));
+            //timeTextView.setText(String.valueOf(track.getTime()));
+            //speedTextView.setText(String.valueOf(track.getDistance()/track.getTime()*1000));
+            timeTextView.setText(track.timePassed(track.getEndTime()));
+            distanceTextView.setText(track.distance(track.getEndTime()));
+            speedTextView.setText(track.speed(track.getEndTime()));
+
+            buttonStop.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    finish();
+                }
+            });
+        }
+
+        }
     }
 
     @Override
@@ -193,38 +262,45 @@ public class TrackActivity extends AppCompatActivity {
                     return;
                 }
                 List<Location> locations = locationResult.getLocations();
-                for (Location location : locations) {
+              /*  for (Location location : locations) {
                     Log.i("INFO", String.valueOf(locations.size()));
                     // Update UI with location data
                     // ...
                     double latitude = location.getLatitude();
                     double longitude = location.getLongitude();
                     double altitude = location.getAltitude();
-                    Log.i("INFO","Promena lokacije: " + latitude + " , " + longitude + " , "+ altitude);
-                }
+                    Log.i("INFO", "Promena lokacije: " + latitude + " , " + longitude + " , " + altitude);
+                } */
                 track.addLocations(locations);
-            };
+            }
+
+            ;
         };
 
     }
+
     @Override
     protected void onResume() {
         super.onResume();
+        if(requestCode == MainActivity.REQUEST_NEW_CODE) {
         if (mRequestingLocationUpdates) {
             startLocationUpdates();
-
+        }
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        stopLocationUpdates();
+        if(requestCode == MainActivity.REQUEST_NEW_CODE) {
+            stopLocationUpdates();
+        }
+
     }
 
     private void stopLocationUpdates() {
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-        if (track != null) {
+        /* if (track != null) {
             List<Location> points = track.getPoints();
             Log.i("INFO", "Track id: " + track.getId() + " Locations: " + points.size());
             for (Location location : points) {
@@ -234,8 +310,9 @@ public class TrackActivity extends AppCompatActivity {
                 double altitude = location.getAltitude();
                 Log.i("INFO", "\n" + latitude + " , " + longitude + " , " + altitude);
             }
-        }
+        } */
     }
+
     @SuppressLint("MissingPermission")
     private void startLocationUpdates() {
         mFusedLocationClient.requestLocationUpdates(mLocationRequest,

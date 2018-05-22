@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class TrackManager {
 
-    private static int counter = 0;
+    private static int counter = 1;
 
     private final Map<Integer, Track> tracksById = new HashMap<>();
 

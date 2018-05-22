@@ -23,6 +23,13 @@
     android:layout_height="wrap_content"
     android:text="@string/start_track"
     />
+
+    <Button
+        android:id="@+id/button_pause_resume_update"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/pause_track"
+        />
 <Button
     android:id="@+id/button_stop_update"
     android:layout_width="match_parent"

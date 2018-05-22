@@ -14,6 +14,8 @@ public class Track implements Parcelable {
     private final List<Location> points;
     private long startTime;
     private long endTime;
+    private float distance;
+    private long time;
 
     public String getName() {
         return name;
@@ -47,6 +49,8 @@ public class Track implements Parcelable {
         points = in.createTypedArrayList(Location.CREATOR);
         startTime = in.readLong();
         endTime = in.readLong();
+        distance = in.readFloat();
+        time = in.readLong();
     }
 
     public static final Creator<Track> CREATOR = new Creator<Track>() {
@@ -69,12 +73,32 @@ public class Track implements Parcelable {
         this.id = id;
         this.points = new ArrayList<>();
         startTime = System.currentTimeMillis();
+        distance = 0;
+        time = 0;
     }
 
-    public Track(int id, List<Location> points,long starttime) {
+    public float getDistance() {
+        return distance;
+    }
+
+    public void setDistance(float distance) {
+        this.distance = distance;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
+    }
+
+    public Track(int id, List<Location> points, long starttime) {
         this.id = id;
         this.points = points;
         this.startTime = starttime;
+        distance = 0;
+        time = 0;
     }
 
     public int getId() {
@@ -95,6 +119,7 @@ public class Track implements Parcelable {
                 distance += points.get(i).distanceTo(points.get(i-1));
             }
         }
+        this.distance = distance;
         return distance;
     }
 
@@ -107,18 +132,19 @@ public class Track implements Parcelable {
                 }
             }
         }
+        this.setDistance(distance);
         return distance;
     }
     public float overallSpeed(){
-        return trackDistance() / (endTime - startTime) * 1000;
+        return distance / time * 1000;
     }
 
     public float currentSpeed(long currentTime){
-        return currentTrackDistance(currentTime) / (currentTime - startTime) * 1000;
+        return trackDistance() / (currentTime - startTime + time) * 1000;
     }
 
     public String timePassed(long currentTime){
-        long timepassed = currentTime - startTime;
+        long timepassed = currentTime - startTime + time;
         long hours = timepassed / 3600000;
         long minutes = (timepassed % 3600000) / 60000;
         long seconds = (timepassed % 60000) / 1000;
@@ -129,7 +155,7 @@ public class Track implements Parcelable {
     }
 
     public String distance(long currentTime){
-        float distance = currentTrackDistance(currentTime);
+        float distance = trackDistance();
 
         String meters = String.valueOf((int)distance % 1000);
         int kmeters = (int)distance / 1000;
@@ -159,5 +185,7 @@ public class Track implements Parcelable {
         parcel.writeTypedList(points);
         parcel.writeLong(startTime);
         parcel.writeLong(endTime);
+        parcel.writeFloat(distance);
+        parcel.writeLong(time);
     }
 }

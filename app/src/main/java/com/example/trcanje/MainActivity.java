@@ -12,7 +12,8 @@ import android.widget.ListView;
 import com.example.trcanje.tracks.Track;
 
 public class MainActivity extends AppCompatActivity {
-    private final int REQUEST_CODE = 0;
+    public static final int REQUEST_NEW_CODE = 0;
+    public static final int REQUEST_VIEW_CODE = 1;
     private Button buttonNew;
     private TrackManager trackManager;
 
@@ -31,29 +32,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
-        TrackAdapter trackAdapter = new TrackAdapter(trackManager.getTracksById(),this);
-        ListView listView = (ListView) findViewById(R.id.list_view_tracks);
-        listView.setAdapter(trackAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-            }
-        });
     }
 
     private void newTrack() {
         Intent intent = new Intent(this,TrackActivity.class);
         trackManager.createNewTrack();
+        intent.putExtra(getString(R.string.request_code),REQUEST_NEW_CODE);
         intent.putExtra(getString(R.string.track_id),trackManager.getCounter()-1);
-        startActivityForResult(intent,REQUEST_CODE);
+        startActivityForResult(intent,REQUEST_NEW_CODE);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == REQUEST_CODE){
+        if(requestCode == REQUEST_NEW_CODE){
             if(resultCode == RESULT_OK){
                 Track track = data.getParcelableExtra(getString(R.string.track));
                 trackManager.setTrack(track.getId(),track);
@@ -65,11 +56,21 @@ public class MainActivity extends AppCompatActivity {
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
+                        viewTrack((Track)adapterView.getAdapter().getItem(i));
                     }
                 });
                 listView.invalidate();
             }
+        } else {
+
         }
+
+    }
+
+    void viewTrack(Track t){
+        Intent intent = new Intent(this,TrackActivity.class);
+        intent.putExtra(getString(R.string.request_code),REQUEST_VIEW_CODE);
+        intent.putExtra(getString(R.string.track),t);
+        startActivityForResult(intent,REQUEST_VIEW_CODE);
     }
 }

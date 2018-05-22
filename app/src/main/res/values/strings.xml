@@ -12,4 +12,8 @@
     <string name="track">TRACK</string>
     <string name="enter_track_name">Enter track name:</string>
     <string name="nothing" />
+    <string name="pause_track">Pause track</string>
+    <string name="resume_track">Resume track</string>
+    <string name="request_code">Request code</string>
+    <string name="back">Back</string>
 </resources>
