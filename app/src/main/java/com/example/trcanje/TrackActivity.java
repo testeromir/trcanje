@@ -120,6 +120,7 @@ public class TrackActivity extends AppCompatActivity {
                         stopLocationUpdates();
                         track.setTime(track.getTime() + System.currentTimeMillis() - track.getStartTime());
                         timer.cancel();
+                        buttonStop.setEnabled(false);
                         buttonPauseResume.setText(getString(R.string.resume_track));
                     } else {
                         if (mRequestingLocationUpdates) {
@@ -137,6 +138,7 @@ public class TrackActivity extends AppCompatActivity {
                             }
                         }, 1, 100);
                         buttonPauseResume.setText(getString(R.string.pause_track));
+                        buttonStop.setEnabled(true);
                     }
                 }
             });
