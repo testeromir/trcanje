@@ -8,13 +8,10 @@
     <string name="list_of_tracks">List of tracks</string>
     <string name="new_track">New track</string>
     <string name="zero">0</string>
-    <string name="track_id">TRACK_ID</string>
-    <string name="track">TRACK</string>
     <string name="enter_track_name">Enter track name:</string>
     <string name="nothing" />
     <string name="pause_track">Pause track</string>
     <string name="resume_track">Resume track</string>
-    <string name="request_code">Request code</string>
     <string name="back">Back</string>
     <string name="delete">Delete</string>
 </resources>

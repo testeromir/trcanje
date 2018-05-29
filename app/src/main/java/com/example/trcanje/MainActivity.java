@@ -16,6 +16,11 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_NEW_CODE = 0;
     public static final int REQUEST_VIEW_CODE = 1;
+
+    public static final String REQUEST_CODE = "REQUEST_CODE";
+    public static final String TRACK = "TRACK";
+    public static final String TRACK_ID = "TRACK_ID";
+
     private Button buttonNew;
    // private TrackManager trackManager;
 
@@ -49,8 +54,15 @@ public class MainActivity extends AppCompatActivity {
     private void newTrack() {
         Intent intent = new Intent(this,TrackActivity.class);
        // trackManager.createNewTrack();
-        intent.putExtra(getString(R.string.request_code),REQUEST_NEW_CODE);
-        intent.putExtra(getString(R.string.track_id), getMaxID() + 1);
+        int id;
+        if(getTracks().size() == 0 ) {
+            id = 1;
+         } else {
+            id = getMaxID() + 1;
+        }
+
+        intent.putExtra(REQUEST_CODE,REQUEST_NEW_CODE);
+        intent.putExtra(TRACK_ID, id);
         startActivityForResult(intent,REQUEST_NEW_CODE);
     }
 
@@ -62,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == REQUEST_NEW_CODE){
             if(resultCode == RESULT_OK){
-                Track track = data.getParcelableExtra(getString(R.string.track));
+                Track track = data.getParcelableExtra(TRACK);
                 insertTrack(track);
              //   trackManager.setTrack(track.getId(),track);
                 Log.i("INFO2", String.valueOf(track.getId()));
@@ -104,8 +116,8 @@ public class MainActivity extends AppCompatActivity {
 
     void viewTrack(Track t){
         Intent intent = new Intent(this,TrackActivity.class);
-        intent.putExtra(getString(R.string.request_code),REQUEST_VIEW_CODE);
-        intent.putExtra(getString(R.string.track),t);
+        intent.putExtra(REQUEST_CODE,REQUEST_VIEW_CODE);
+        intent.putExtra(TRACK,t);
         startActivityForResult(intent,REQUEST_VIEW_CODE);
     }
 }

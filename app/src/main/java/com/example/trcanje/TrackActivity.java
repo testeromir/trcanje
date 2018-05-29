@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -53,12 +56,19 @@ public class TrackActivity extends AppCompatActivity {
     private Track track;
     public int requestCode;
 
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            updateGUI();
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_track);
         Intent intent = getIntent();
-        requestCode = intent.getIntExtra(getString(R.string.request_code), 0);
+        requestCode = intent.getIntExtra(MainActivity.REQUEST_CODE, 0);
 
         nameEditText = findViewById(R.id.edit_text_track_name);
         timeTextView = findViewById(R.id.TextView_time);
@@ -68,8 +78,8 @@ public class TrackActivity extends AppCompatActivity {
         buttonPauseResume = (Button) findViewById(R.id.button_pause_resume_update);
         buttonStop = (Button) findViewById(R.id.button_stop_update);
 
-        if(requestCode == MainActivity.REQUEST_NEW_CODE){
-            id = intent.getIntExtra(getString(R.string.track_id), 0);
+        if (requestCode == MainActivity.REQUEST_NEW_CODE) {
+            id = intent.getIntExtra(MainActivity.TRACK_ID, 0);
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                     ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -96,18 +106,19 @@ public class TrackActivity extends AppCompatActivity {
                     buttonPauseResume.setEnabled(true);
                     buttonStart.setEnabled(false);
                     buttonStop.setEnabled(true);
-                    mRequestingLocationUpdates = true;
                     track = new Track(id);
+
                     timer = new Timer();
                     timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            timeTextView.setText(track.timePassed(System.currentTimeMillis()));
-                            distanceTextView.setText(track.distance(System.currentTimeMillis()));
-                            speedTextView.setText(track.speed(System.currentTimeMillis()));
-
+                            Message message = handler.obtainMessage();
+//                            message.what = 1;
+                            handler.sendMessage(message);
                         }
                     }, 1, 100);
+
+                    mRequestingLocationUpdates = true;
                     startLocationUpdates();
                 }
             });
@@ -131,9 +142,9 @@ public class TrackActivity extends AppCompatActivity {
                         timer.schedule(new TimerTask() {
                             @Override
                             public void run() {
-                                timeTextView.setText(track.timePassed(System.currentTimeMillis()));
-                                distanceTextView.setText(track.distance(System.currentTimeMillis()));
-                                speedTextView.setText(track.speed(System.currentTimeMillis()));
+                                Message message = handler.obtainMessage();
+
+                                handler.sendMessage(message);
 
                             }
                         }, 1, 100);
@@ -155,53 +166,55 @@ public class TrackActivity extends AppCompatActivity {
                     timer.cancel();
                     track.setName(nameEditText.getText().toString());
                     track.setEndTime(System.currentTimeMillis());
-                  //  track.setTime(track.getTime() + track.getEndTime() - track.getStartTime());
+                    //  track.setTime(track.getTime() + track.getEndTime() - track.getStartTime());
                     stopLocationUpdates();
                     Intent intent = new Intent();
-                    intent.putExtra(getString(R.string.track), track);
+                    intent.putExtra(MainActivity.TRACK, track);
                     setResult(RESULT_OK, intent);
                     finish();
                 }
             });
             buttonStop.setEnabled(false);
             initiLocation();
-        } else {if(requestCode == MainActivity.REQUEST_VIEW_CODE){
-            buttonStart.setVisibility(View.GONE);
-            buttonPauseResume.setText(R.string.delete);
-            buttonStop.setText(R.string.back);
-            final Track track = intent.getParcelableExtra(getString(R.string.track));
-            nameEditText.setText(track.getName());
-          //  distanceTextView.setText(String.valueOf(track.getDistance()));
-            //timeTextView.setText(String.valueOf(track.getTime()));
-            //speedTextView.setText(String.valueOf(track.getDistance()/track.getTime()*1000));
-            timeTextView.setText(track.timePassed(track.getEndTime()));
-            distanceTextView.setText(track.distance(track.getEndTime()));
-            speedTextView.setText(track.speed(track.getEndTime()));
-            buttonPauseResume.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    delete(track.getId());
-                    finish();
-                }
-            });
+        } else {
+            if (requestCode == MainActivity.REQUEST_VIEW_CODE) {
+                buttonStart.setVisibility(View.GONE);
+                buttonPauseResume.setText(R.string.delete);
+                buttonStop.setText(R.string.back);
+                final Track track = intent.getParcelableExtra(MainActivity.TRACK);
+                nameEditText.setText(track.getName());
+                //  distanceTextView.setText(String.valueOf(track.getDistance()));
+                //timeTextView.setText(String.valueOf(track.getTime()));
+                //speedTextView.setText(String.valueOf(track.getDistance()/track.getTime()*1000));
+                timeTextView.setText(track.timePassed(track.getEndTime()));
+                distanceTextView.setText(track.distance(track.getEndTime()));
+                speedTextView.setText(track.speed(track.getEndTime()));
+                buttonPauseResume.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        delete(track.getId());
+                        finish();
+                    }
+                });
 
-            buttonStop.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    track.setName(nameEditText.getText().toString());
-                    update(track);
-                    finish();
-                }
-            });
-        }
+                buttonStop.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        track.setName(nameEditText.getText().toString());
+                        update(track);
+                        finish();
+                    }
+                });
+            }
 
         }
     }
-    public void delete(int id){
+
+    public void delete(int id) {
         TrcanjeDatabase.getInstance(this).trackDao().deleteTrackDB(id);
     }
 
-    public void update(Track track){
+    public void update(Track track) {
         TrcanjeDatabase.getInstance(this).trackDao().updateTrackDB(track);
     }
 
@@ -299,17 +312,17 @@ public class TrackActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(requestCode == MainActivity.REQUEST_NEW_CODE) {
-        if (mRequestingLocationUpdates) {
-            startLocationUpdates();
-        }
+        if (requestCode == MainActivity.REQUEST_NEW_CODE) {
+            if (mRequestingLocationUpdates) {
+                startLocationUpdates();
+            }
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(requestCode == MainActivity.REQUEST_NEW_CODE) {
+        if (requestCode == MainActivity.REQUEST_NEW_CODE) {
             stopLocationUpdates();
         }
 
@@ -332,15 +345,18 @@ public class TrackActivity extends AppCompatActivity {
 
     @SuppressLint("MissingPermission")
     private void startLocationUpdates() {
-        mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-                mLocationCallback,
-                null /* Looper */);
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null /* Looper */);
+    }
+
+    protected void updateGUI() {
+        long currentTime = System.currentTimeMillis();
+        timeTextView.setText(track.timePassed(currentTime));
+        distanceTextView.setText(track.distance(currentTime));
+        speedTextView.setText(track.speed(currentTime));
     }
 }
-
 /*
-    Prethodna aktivnost koja ce da predstavlja listu staza, gde cemo imati opciju da klikom pogledamo prethodne staze ili da dodamo novu stazu.
-    Morace ovo lepo da se osmisli. Start new track prilikom pritiska na dugme da se povuce odavde u tu prethodnu klasu.
-    Posle toga ce ici mapa i slicno.
+    Sredjivanje koda (menadzer konstantnih podataka, paketi, eventualno database manager)
+    Mapa
 
  */

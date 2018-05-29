@@ -21,7 +21,7 @@ public interface TrackDao {
     public List<Track> getTracksDB();
 
     @Query("SELECT max(id) FROM track_table")
-    public int getMaxIDDB();
+    public Integer getMaxIDDB();
 
     @Query("DELETE FROM track_table WHERE id = :currID")
     public void deleteTrackDB(int currID);
