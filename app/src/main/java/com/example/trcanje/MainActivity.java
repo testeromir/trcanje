@@ -11,17 +11,29 @@ import android.widget.ListView;
 
 import com.example.trcanje.tracks.Track;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_NEW_CODE = 0;
     public static final int REQUEST_VIEW_CODE = 1;
     private Button buttonNew;
-    private TrackManager trackManager;
+   // private TrackManager trackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        trackManager = new TrackManager();
+
+        TrackAdapter trackAdapter = new TrackAdapter(getTracks(),this);
+        ListView listView = (ListView) findViewById(R.id.list_view_tracks);
+        listView.setAdapter(trackAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                viewTrack((Track)adapterView.getAdapter().getItem(i));
+            }
+        });
+        listView.invalidate();
 
 
         buttonNew = (Button) findViewById(R.id.button_new_track);
@@ -36,10 +48,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void newTrack() {
         Intent intent = new Intent(this,TrackActivity.class);
-        trackManager.createNewTrack();
+       // trackManager.createNewTrack();
         intent.putExtra(getString(R.string.request_code),REQUEST_NEW_CODE);
-        intent.putExtra(getString(R.string.track_id),trackManager.getCounter()-1);
+        intent.putExtra(getString(R.string.track_id), getMaxID() + 1);
         startActivityForResult(intent,REQUEST_NEW_CODE);
+    }
+
+    private int getMaxID() {
+        return TrcanjeDatabase.getInstance(this).trackDao().getMaxIDDB();
     }
 
     @Override
@@ -47,10 +63,12 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == REQUEST_NEW_CODE){
             if(resultCode == RESULT_OK){
                 Track track = data.getParcelableExtra(getString(R.string.track));
-                trackManager.setTrack(track.getId(),track);
+                insertTrack(track);
+             //   trackManager.setTrack(track.getId(),track);
                 Log.i("INFO2", String.valueOf(track.getId()));
 
-                TrackAdapter trackAdapter = new TrackAdapter(trackManager.getTracksById(),this);
+               // TrackAdapter trackAdapter = new TrackAdapter(trackManager.getTracksById(),this);
+                 TrackAdapter trackAdapter = new TrackAdapter(getTracks(),this);
                 ListView listView = (ListView) findViewById(R.id.list_view_tracks);
                 listView.setAdapter(trackAdapter);
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -62,9 +80,26 @@ public class MainActivity extends AppCompatActivity {
                 listView.invalidate();
             }
         } else {
-
+            TrackAdapter trackAdapter = new TrackAdapter(getTracks(),this);
+            ListView listView = (ListView) findViewById(R.id.list_view_tracks);
+            listView.setAdapter(trackAdapter);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    viewTrack((Track)adapterView.getAdapter().getItem(i));
+                }
+            });
+            listView.invalidate();
         }
 
+    }
+
+    public void insertTrack(Track track){
+        TrcanjeDatabase.getInstance(this).trackDao().insertTrackDB(track);
+    }
+
+    public ArrayList<Track> getTracks(){
+        return new ArrayList<Track> (TrcanjeDatabase.getInstance(this).trackDao().getTracksDB());
     }
 
     void viewTrack(Track t){

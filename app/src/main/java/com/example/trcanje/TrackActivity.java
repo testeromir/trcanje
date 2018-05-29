@@ -167,9 +167,9 @@ public class TrackActivity extends AppCompatActivity {
             initiLocation();
         } else {if(requestCode == MainActivity.REQUEST_VIEW_CODE){
             buttonStart.setVisibility(View.GONE);
-            buttonPauseResume.setVisibility(View.GONE);
+            buttonPauseResume.setText(R.string.delete);
             buttonStop.setText(R.string.back);
-            Track track = intent.getParcelableExtra(getString(R.string.track));
+            final Track track = intent.getParcelableExtra(getString(R.string.track));
             nameEditText.setText(track.getName());
           //  distanceTextView.setText(String.valueOf(track.getDistance()));
             //timeTextView.setText(String.valueOf(track.getTime()));
@@ -177,17 +177,32 @@ public class TrackActivity extends AppCompatActivity {
             timeTextView.setText(track.timePassed(track.getEndTime()));
             distanceTextView.setText(track.distance(track.getEndTime()));
             speedTextView.setText(track.speed(track.getEndTime()));
+            buttonPauseResume.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    delete(track.getId());
+                    finish();
+                }
+            });
 
             buttonStop.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
+                    track.setName(nameEditText.getText().toString());
+                    update(track);
                     finish();
                 }
             });
         }
 
         }
+    }
+    public void delete(int id){
+        TrcanjeDatabase.getInstance(this).trackDao().deleteTrackDB(id);
+    }
+
+    public void update(Track track){
+        TrcanjeDatabase.getInstance(this).trackDao().updateTrackDB(track);
     }
 
     @Override

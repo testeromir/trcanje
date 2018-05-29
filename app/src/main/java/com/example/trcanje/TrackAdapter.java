@@ -27,6 +27,11 @@ public class TrackAdapter extends BaseAdapter {
         this.context = context;
     }
 
+    public TrackAdapter(ArrayList<Track> tracks, Context context){
+        this.tracksById = tracks;
+        this.context = context;
+    }
+
     @Override
     public int getCount() {
         return tracksById.size();

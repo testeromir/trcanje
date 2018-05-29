@@ -1,20 +1,46 @@
 package com.example.trcanje.tracks;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.TypeConverter;
+import android.arch.persistence.room.TypeConverters;
 import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.example.trcanje.Converters;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity(tableName = "track_table")
 public class Track implements Parcelable {
 
+    @PrimaryKey
     private final int id;
+
+    @ColumnInfo(name = "name")
     private String name;
-    private final List<Location> points;
+
+    @ColumnInfo(name = "points")
+    @TypeConverters(Converters.class)
+    private List<Location> points;
+
+    public void setPoints(List<Location> points) {
+        this.points = points;
+    }
+
+    @ColumnInfo(name = "start_time")
     private long startTime;
+
+    @ColumnInfo(name = "end_time")
     private long endTime;
+
+    @ColumnInfo(name = "distance")
     private float distance;
+
+    @ColumnInfo(name = "time")
     private long time;
 
     public String getName() {
@@ -51,6 +77,17 @@ public class Track implements Parcelable {
         endTime = in.readLong();
         distance = in.readFloat();
         time = in.readLong();
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(id);
+        parcel.writeString(name);
+        parcel.writeTypedList(points);
+        parcel.writeLong(startTime);
+        parcel.writeLong(endTime);
+        parcel.writeFloat(distance);
+        parcel.writeLong(time);
     }
 
     public static final Creator<Track> CREATOR = new Creator<Track>() {
@@ -178,14 +215,5 @@ public class Track implements Parcelable {
         return 0;
     }
 
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeInt(id);
-        parcel.writeString(name);
-        parcel.writeTypedList(points);
-        parcel.writeLong(startTime);
-        parcel.writeLong(endTime);
-        parcel.writeFloat(distance);
-        parcel.writeLong(time);
-    }
+
 }
