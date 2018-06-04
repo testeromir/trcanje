@@ -9,17 +9,14 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.example.trcanje.database.DatabaseManager;
+import com.example.trcanje.database.TrcanjeDatabase;
 import com.example.trcanje.tracks.Track;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    public static final int REQUEST_NEW_CODE = 0;
-    public static final int REQUEST_VIEW_CODE = 1;
 
-    public static final String REQUEST_CODE = "REQUEST_CODE";
-    public static final String TRACK = "TRACK";
-    public static final String TRACK_ID = "TRACK_ID";
 
     private Button buttonNew;
    // private TrackManager trackManager;
@@ -61,20 +58,18 @@ public class MainActivity extends AppCompatActivity {
             id = getMaxID() + 1;
         }
 
-        intent.putExtra(REQUEST_CODE,REQUEST_NEW_CODE);
-        intent.putExtra(TRACK_ID, id);
-        startActivityForResult(intent,REQUEST_NEW_CODE);
+        intent.putExtra(ConstantsManager.REQUEST_CODE,ConstantsManager.REQUEST_NEW_CODE);
+        intent.putExtra(ConstantsManager.TRACK_ID, id);
+        startActivityForResult(intent,ConstantsManager.REQUEST_NEW_CODE);
     }
 
-    private int getMaxID() {
-        return TrcanjeDatabase.getInstance(this).trackDao().getMaxIDDB();
-    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == REQUEST_NEW_CODE){
+        if(requestCode == ConstantsManager.REQUEST_NEW_CODE){
             if(resultCode == RESULT_OK){
-                Track track = data.getParcelableExtra(TRACK);
+                Track track = data.getParcelableExtra(ConstantsManager.TRACK);
                 insertTrack(track);
              //   trackManager.setTrack(track.getId(),track);
                 Log.i("INFO2", String.valueOf(track.getId()));
@@ -106,18 +101,22 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void insertTrack(Track track){
-        TrcanjeDatabase.getInstance(this).trackDao().insertTrackDB(track);
+    private int getMaxID() {
+        return DatabaseManager.getMaxID(this);
     }
 
-    public ArrayList<Track> getTracks(){
-        return new ArrayList<Track> (TrcanjeDatabase.getInstance(this).trackDao().getTracksDB());
+    private void insertTrack(Track track){
+        DatabaseManager.insertTrack(track,this);
+    }
+
+    private ArrayList<Track> getTracks(){
+        return DatabaseManager.getTracks(this);
     }
 
     void viewTrack(Track t){
         Intent intent = new Intent(this,TrackActivity.class);
-        intent.putExtra(REQUEST_CODE,REQUEST_VIEW_CODE);
-        intent.putExtra(TRACK,t);
-        startActivityForResult(intent,REQUEST_VIEW_CODE);
+        intent.putExtra(ConstantsManager.REQUEST_CODE,ConstantsManager.REQUEST_VIEW_CODE);
+        intent.putExtra(ConstantsManager.TRACK,t);
+        startActivityForResult(intent,ConstantsManager.REQUEST_VIEW_CODE);
     }
 }

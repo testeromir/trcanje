@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -19,6 +18,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.trcanje.database.DatabaseManager;
+import com.example.trcanje.database.TrcanjeDatabase;
 import com.example.trcanje.tracks.Track;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -39,7 +40,7 @@ import java.util.TimerTask;
 
 public class TrackActivity extends AppCompatActivity {
 
-    private static final int REQUEST_CHECK_SETTINGS = 1;
+
     private FusedLocationProviderClient mFusedLocationClient;
     private boolean mRequestingLocationUpdates;
     private LocationRequest mLocationRequest;
@@ -68,7 +69,7 @@ public class TrackActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_track);
         Intent intent = getIntent();
-        requestCode = intent.getIntExtra(MainActivity.REQUEST_CODE, 0);
+        requestCode = intent.getIntExtra(ConstantsManager.REQUEST_CODE, 0);
 
         nameEditText = findViewById(R.id.edit_text_track_name);
         timeTextView = findViewById(R.id.TextView_time);
@@ -78,8 +79,8 @@ public class TrackActivity extends AppCompatActivity {
         buttonPauseResume = (Button) findViewById(R.id.button_pause_resume_update);
         buttonStop = (Button) findViewById(R.id.button_stop_update);
 
-        if (requestCode == MainActivity.REQUEST_NEW_CODE) {
-            id = intent.getIntExtra(MainActivity.TRACK_ID, 0);
+        if (requestCode == ConstantsManager.REQUEST_NEW_CODE) {
+            id = intent.getIntExtra(ConstantsManager.TRACK_ID, 0);
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                     ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -169,7 +170,7 @@ public class TrackActivity extends AppCompatActivity {
                     //  track.setTime(track.getTime() + track.getEndTime() - track.getStartTime());
                     stopLocationUpdates();
                     Intent intent = new Intent();
-                    intent.putExtra(MainActivity.TRACK, track);
+                    intent.putExtra(ConstantsManager.TRACK, track);
                     setResult(RESULT_OK, intent);
                     finish();
                 }
@@ -177,11 +178,11 @@ public class TrackActivity extends AppCompatActivity {
             buttonStop.setEnabled(false);
             initiLocation();
         } else {
-            if (requestCode == MainActivity.REQUEST_VIEW_CODE) {
+            if (requestCode == ConstantsManager.REQUEST_VIEW_CODE) {
                 buttonStart.setVisibility(View.GONE);
                 buttonPauseResume.setText(R.string.delete);
                 buttonStop.setText(R.string.back);
-                final Track track = intent.getParcelableExtra(MainActivity.TRACK);
+                final Track track = intent.getParcelableExtra(ConstantsManager.TRACK);
                 nameEditText.setText(track.getName());
                 //  distanceTextView.setText(String.valueOf(track.getDistance()));
                 //timeTextView.setText(String.valueOf(track.getTime()));
@@ -210,13 +211,7 @@ public class TrackActivity extends AppCompatActivity {
         }
     }
 
-    public void delete(int id) {
-        TrcanjeDatabase.getInstance(this).trackDao().deleteTrackDB(id);
-    }
 
-    public void update(Track track) {
-        TrcanjeDatabase.getInstance(this).trackDao().updateTrackDB(track);
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -277,7 +272,7 @@ public class TrackActivity extends AppCompatActivity {
                         // and check the result in onActivityResult().
                         ResolvableApiException resolvable = (ResolvableApiException) e;
                         resolvable.startResolutionForResult(TrackActivity.this,
-                                REQUEST_CHECK_SETTINGS);
+                                ConstantsManager.REQUEST_CHECK_SETTINGS);
                     } catch (IntentSender.SendIntentException sendEx) {
                         // Ignore the error.
                     }
@@ -312,7 +307,7 @@ public class TrackActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (requestCode == MainActivity.REQUEST_NEW_CODE) {
+        if (requestCode == ConstantsManager.REQUEST_NEW_CODE) {
             if (mRequestingLocationUpdates) {
                 startLocationUpdates();
             }
@@ -322,7 +317,7 @@ public class TrackActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (requestCode == MainActivity.REQUEST_NEW_CODE) {
+        if (requestCode == ConstantsManager.REQUEST_NEW_CODE) {
             stopLocationUpdates();
         }
 
@@ -354,9 +349,15 @@ public class TrackActivity extends AppCompatActivity {
         distanceTextView.setText(track.distance(currentTime));
         speedTextView.setText(track.speed(currentTime));
     }
+
+    private void delete(int id){
+        DatabaseManager.delete(id,this);
+    }
+
+    private void update(Track track){
+        DatabaseManager.update(track,this);
+    }
 }
 /*
-    Sredjivanje koda (menadzer konstantnih podataka, paketi, eventualno database manager)
     Mapa
-
  */

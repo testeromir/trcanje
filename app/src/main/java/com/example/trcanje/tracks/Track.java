@@ -3,13 +3,12 @@ package com.example.trcanje.tracks;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
-import android.arch.persistence.room.TypeConverter;
 import android.arch.persistence.room.TypeConverters;
 import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.example.trcanje.Converters;
+import com.example.trcanje.database.Converters;
 
 import java.util.ArrayList;
 import java.util.List;
