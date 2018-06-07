@@ -322,16 +322,7 @@ public class TrackActivity extends FragmentActivity implements OnMapReadyCallbac
                     track.addLocations(locations);
                 }
 
-                ArrayList<LatLng> list = new ArrayList<>();
-                for (Location location : track.getPoints()) {
-                    list.add(new LatLng(location.getLatitude(), location.getLongitude()));
-                }
-                mMap.clear();
-               Polyline polyline1 = mMap.addPolyline(new PolylineOptions()
-                        .clickable(true)
-                        .addAll(list));
-                polyline1.setTag(track.getName());
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(list.get(list.size()-1),ConstantsManager.ZOOM));
+               drawMap();
 
                // mMap.addMarker(new MarkerOptions().position(list.get(list.size()-1)).title("Last location"));
 
@@ -409,17 +400,21 @@ public class TrackActivity extends FragmentActivity implements OnMapReadyCallbac
             buttonStart.setEnabled(true);
         }
         if (requestCode == ConstantsManager.REQUEST_VIEW_CODE) {
-            ArrayList<LatLng> list = new ArrayList<>();
-            for (Location location : track.getPoints()) {
-                list.add(new LatLng(location.getLatitude(), location.getLongitude()));
-            }
-            mMap.clear();
-            Polyline polyline1 = mMap.addPolyline(new PolylineOptions()
-                    .clickable(true)
-                    .addAll(list));
-            polyline1.setTag(track.getName());
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(list.get(list.size()-1),ConstantsManager.ZOOM));
+            drawMap();
         }
+    }
+
+    public void drawMap(){
+        ArrayList<LatLng> list = new ArrayList<>();
+        for (Location location : track.getPoints()) {
+            list.add(new LatLng(location.getLatitude(), location.getLongitude()));
+        }
+        mMap.clear();
+        Polyline polyline1 = mMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .addAll(list));
+        polyline1.setTag(track.getName());
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(list.get(list.size()-1),ConstantsManager.ZOOM));
     }
 }
 /*
