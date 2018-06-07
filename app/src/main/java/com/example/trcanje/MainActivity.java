@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         TrackAdapter trackAdapter = new TrackAdapter(getTracks(),this);
         ListView listView = (ListView) findViewById(R.id.list_view_tracks);
         listView.setAdapter(trackAdapter);

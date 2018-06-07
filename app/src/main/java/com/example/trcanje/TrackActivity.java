@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.trcanje.database.DatabaseManager;
 import com.example.trcanje.database.TrcanjeDatabase;
@@ -30,19 +32,31 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class TrackActivity extends AppCompatActivity {
+public class TrackActivity extends FragmentActivity implements OnMapReadyCallback {
 
 
     private FusedLocationProviderClient mFusedLocationClient;
     private boolean mRequestingLocationUpdates;
+    private boolean newClicked;
     private LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
     private Timer timer;
@@ -64,10 +78,17 @@ public class TrackActivity extends AppCompatActivity {
         }
     };
 
+    private GoogleMap mMap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_track);
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+
+        mapFragment.getMapAsync(this);
         Intent intent = getIntent();
         requestCode = intent.getIntExtra(ConstantsManager.REQUEST_CODE, 0);
 
@@ -81,20 +102,7 @@ public class TrackActivity extends AppCompatActivity {
 
         if (requestCode == ConstantsManager.REQUEST_NEW_CODE) {
             id = intent.getIntExtra(ConstantsManager.TRACK_ID, 0);
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                ActivityCompat.requestPermissions(this, new String[]{"android.permission.ACCESS_FINE_LOCATION"}, 1);
 
-                return;
-            }
-            //  trackManager = new TrackManager();
 
 
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -118,12 +126,11 @@ public class TrackActivity extends AppCompatActivity {
                             handler.sendMessage(message);
                         }
                     }, 1, 100);
-
-                    mRequestingLocationUpdates = true;
+                    newClicked = true;
                     startLocationUpdates();
                 }
             });
-
+            buttonStart.setEnabled(false);
 
             buttonPauseResume.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -135,9 +142,9 @@ public class TrackActivity extends AppCompatActivity {
                         buttonStop.setEnabled(false);
                         buttonPauseResume.setText(getString(R.string.resume_track));
                     } else {
-                        if (mRequestingLocationUpdates) {
+
                             startLocationUpdates();
-                        }
+
                         track.setStartTime(System.currentTimeMillis());
                         timer = new Timer();
                         timer.schedule(new TimerTask() {
@@ -176,13 +183,27 @@ public class TrackActivity extends AppCompatActivity {
                 }
             });
             buttonStop.setEnabled(false);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                ActivityCompat.requestPermissions(this, new String[]{"android.permission.ACCESS_FINE_LOCATION"}, 1);
+
+                return;
+            }
+            //  trackManager = new TrackManager();
             initiLocation();
         } else {
             if (requestCode == ConstantsManager.REQUEST_VIEW_CODE) {
                 buttonStart.setVisibility(View.GONE);
                 buttonPauseResume.setText(R.string.delete);
                 buttonStop.setText(R.string.back);
-                final Track track = intent.getParcelableExtra(ConstantsManager.TRACK);
+                track = intent.getParcelableExtra(ConstantsManager.TRACK);
                 nameEditText.setText(track.getName());
                 //  distanceTextView.setText(String.valueOf(track.getDistance()));
                 //timeTextView.setText(String.valueOf(track.getTime()));
@@ -206,11 +227,13 @@ public class TrackActivity extends AppCompatActivity {
                         finish();
                     }
                 });
+
+
+
             }
 
         }
     }
-
 
 
     @Override
@@ -223,7 +246,7 @@ public class TrackActivity extends AppCompatActivity {
 
     @SuppressLint({"MissingPermission", "RestrictedApi"})
     private void initiLocation() {
-        mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+      /*  mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
                 Log.i("INFO", "Uspeh");
@@ -233,7 +256,7 @@ public class TrackActivity extends AppCompatActivity {
             public void onFailure(@NonNull Exception e) {
                 Log.i("INFO", "Fail");
             }
-        });
+        }); */
 
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(10000);
@@ -286,7 +309,7 @@ public class TrackActivity extends AppCompatActivity {
                 if (locationResult == null) {
                     return;
                 }
-                List<Location> locations = locationResult.getLocations();
+                ArrayList<Location> locations = (ArrayList<Location>) locationResult.getLocations();
               /*  for (Location location : locations) {
                     Log.i("INFO", String.valueOf(locations.size()));
                     // Update UI with location data
@@ -295,8 +318,25 @@ public class TrackActivity extends AppCompatActivity {
                     double longitude = location.getLongitude();
                     double altitude = location.getAltitude();
                     Log.i("INFO", "Promena lokacije: " + latitude + " , " + longitude + " , " + altitude);
-                } */
-                track.addLocations(locations);
+                } */if(locations != null) {
+                    track.addLocations(locations);
+                }
+
+                ArrayList<LatLng> list = new ArrayList<>();
+                for (Location location : track.getPoints()) {
+                    list.add(new LatLng(location.getLatitude(), location.getLongitude()));
+                }
+                mMap.clear();
+               Polyline polyline1 = mMap.addPolyline(new PolylineOptions()
+                        .clickable(true)
+                        .addAll(list));
+                polyline1.setTag(track.getName());
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(list.get(list.size()-1),ConstantsManager.ZOOM));
+
+               // mMap.addMarker(new MarkerOptions().position(list.get(list.size()-1)).title("Last location"));
+
+
+
             }
 
             ;
@@ -307,10 +347,8 @@ public class TrackActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (requestCode == ConstantsManager.REQUEST_NEW_CODE) {
-            if (mRequestingLocationUpdates) {
+        if (requestCode == ConstantsManager.REQUEST_NEW_CODE && newClicked)  {
                 startLocationUpdates();
-            }
         }
     }
 
@@ -324,7 +362,10 @@ public class TrackActivity extends AppCompatActivity {
     }
 
     private void stopLocationUpdates() {
-        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        if(mRequestingLocationUpdates) {
+            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+            mRequestingLocationUpdates = false;
+        }
         /* if (track != null) {
             List<Location> points = track.getPoints();
             Log.i("INFO", "Track id: " + track.getId() + " Locations: " + points.size());
@@ -340,7 +381,10 @@ public class TrackActivity extends AppCompatActivity {
 
     @SuppressLint("MissingPermission")
     private void startLocationUpdates() {
-        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null /* Looper */);
+        if(!mRequestingLocationUpdates) {
+            mRequestingLocationUpdates = true;
+            mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null /* Looper */);
+        }
     }
 
     protected void updateGUI() {
@@ -350,12 +394,32 @@ public class TrackActivity extends AppCompatActivity {
         speedTextView.setText(track.speed(currentTime));
     }
 
-    private void delete(int id){
-        DatabaseManager.delete(id,this);
+    private void delete(int id) {
+        DatabaseManager.delete(id, this);
     }
 
-    private void update(Track track){
-        DatabaseManager.update(track,this);
+    private void update(Track track) {
+        DatabaseManager.update(track, this);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        if(requestCode == ConstantsManager.REQUEST_NEW_CODE) {
+            buttonStart.setEnabled(true);
+        }
+        if (requestCode == ConstantsManager.REQUEST_VIEW_CODE) {
+            ArrayList<LatLng> list = new ArrayList<>();
+            for (Location location : track.getPoints()) {
+                list.add(new LatLng(location.getLatitude(), location.getLongitude()));
+            }
+            mMap.clear();
+            Polyline polyline1 = mMap.addPolyline(new PolylineOptions()
+                    .clickable(true)
+                    .addAll(list));
+            polyline1.setTag(track.getName());
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(list.get(list.size()-1),ConstantsManager.ZOOM));
+        }
     }
 }
 /*

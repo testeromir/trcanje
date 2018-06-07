@@ -145,7 +145,7 @@ public class Track implements Parcelable {
         return points;
     }
 
-    public void addLocations(List<Location> locations){
+    public void addLocations(ArrayList<Location> locations){
         getPoints().addAll(locations);
     }
     public float trackDistance(){
