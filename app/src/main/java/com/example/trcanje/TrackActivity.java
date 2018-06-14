@@ -112,9 +112,8 @@ public class TrackActivity extends FragmentActivity implements OnMapReadyCallbac
             buttonStart.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    buttonPauseResume.setEnabled(true);
                     buttonStart.setEnabled(false);
-                    buttonStop.setEnabled(true);
+
                     track = new Track(id);
 
                     timer = new Timer();
@@ -323,7 +322,8 @@ public class TrackActivity extends FragmentActivity implements OnMapReadyCallbac
                 }
 
                drawMap();
-
+                buttonPauseResume.setEnabled(true);
+                buttonStop.setEnabled(true);
                // mMap.addMarker(new MarkerOptions().position(list.get(list.size()-1)).title("Last location"));
 
 
@@ -350,6 +350,12 @@ public class TrackActivity extends FragmentActivity implements OnMapReadyCallbac
             stopLocationUpdates();
         }
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopLocationUpdates();
     }
 
     private void stopLocationUpdates() {
